@@ -1,0 +1,31 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "plugins": ["postgres", "redis"],
+  "services": [
+    {
+      "name": "web",
+      "startCommand": "./scripts/start-web.sh",
+      "envVars": {
+        "DATABASE_URL": "${{postgres.DATABASE_URL}}",
+        "REDIS_URL": "${{redis.REDIS_URL}}",
+        "SUPABASE_URL": "${{SUPABASE_URL}}",
+        "SUPABASE_KEY": "${{SUPABASE_KEY}}",
+        "SUPABASE_BUCKET": "${{SUPABASE_BUCKET}}"
+      },
+      "healthCheckPath": "/metrics",
+      "port": "${PORT}"
+    },
+    {
+      "name": "worker",
+      "startCommand": "./scripts/start-worker.sh",
+      "envVars": {
+        "DATABASE_URL": "${{postgres.DATABASE_URL}}",
+        "REDIS_URL": "${{redis.REDIS_URL}}",
+        "SUPABASE_URL": "${{SUPABASE_URL}}",
+        "SUPABASE_KEY": "${{SUPABASE_KEY}}",
+        "SUPABASE_BUCKET": "${{SUPABASE_BUCKET}}"
+      },
+      "logWatch": true
+    }
+  ]
+}
