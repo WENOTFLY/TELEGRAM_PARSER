@@ -6,6 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import settings
 from migrate import upgrade_db
 from .routes.auth import router as auth_router
+from .routes.qr import router as qr_router
+from .routes.accounts import router as accounts_router
 
 app = FastAPI()
 
@@ -19,5 +21,7 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+app.include_router(qr_router)
+app.include_router(accounts_router)
 
 upgrade_db()
