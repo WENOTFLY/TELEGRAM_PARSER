@@ -76,7 +76,7 @@ class Channel(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     last_parsed_at: Mapped[datetime | None] = mapped_column(DateTime)
 
-    owner_account: Mapped["TGAccount" | None] = relationship(back_populates="channels")
+    owner_account: Mapped[TGAccount | None] = relationship(back_populates="channels")
     subscriptions: Mapped[list["Subscription"]] = relationship(back_populates="channel")
     messages: Mapped[list["Message"]] = relationship(back_populates="channel")
     states: Mapped[list["AccountChannelState"]] = relationship(back_populates="channel")
@@ -211,7 +211,7 @@ class EditorResult(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     user: Mapped["User"] = relationship(back_populates="editor_results")
-    topic: Mapped["Topic" | None] = relationship(back_populates="editor_results")
+    topic: Mapped[Topic | None] = relationship(back_populates="editor_results")
     image_briefs: Mapped[list["ImageBrief"]] = relationship(back_populates="editor_result")
     content_packages: Mapped[list["ContentPackage"]] = relationship(back_populates="editor_result")
 
