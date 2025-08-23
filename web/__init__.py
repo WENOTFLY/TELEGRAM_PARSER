@@ -11,6 +11,7 @@ from .routes.accounts import router as accounts_router
 from .routes.channels import router as channels_router
 from .routes.feed import router as feed_router
 from .routes.top import router as top_router
+from .routes.pipeline import router as pipeline_router
 
 app = FastAPI()
 
@@ -29,5 +30,6 @@ app.include_router(accounts_router)
 app.include_router(channels_router)
 app.include_router(feed_router)
 app.include_router(top_router)
+app.include_router(pipeline_router)
 
 upgrade_db()
