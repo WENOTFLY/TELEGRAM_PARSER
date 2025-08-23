@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "telegram-parser"
+version = "0.1.0"
+description = "Parsing Telegram channels with AI pipeline"
+authors = [{name = "TG Studio"}]
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "sqlalchemy",
+    "alembic",
+    "telethon",
+    "redis",
+    "openai",
+    "pydantic",
+    "pydantic-settings",
+]
