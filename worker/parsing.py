@@ -20,6 +20,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from config import settings
+from logging_config import session_id_var, user_id_var
+from worker import FLOOD_WAIT_COUNTER, WORKER_ERRORS
 from web.models import (
     AccountChannelState,
     MediaAsset,
@@ -57,6 +59,8 @@ async def poll_accounts(session: Session, supabase: Any) -> None:
         if not account.session_cipher:
             continue
 
+        tok_user = user_id_var.set(account.user_id)
+        tok_session = session_id_var.set(account.id)
         client = TelegramClient(
             StringSession(account.session_cipher),
             settings.telegram_api_id,
@@ -66,8 +70,13 @@ async def poll_accounts(session: Session, supabase: Any) -> None:
         try:
             for state in account.states:
                 await _fetch_channel_messages(client, state, session, supabase, errors)
+        except Exception:  # noqa: BLE001 - log and count
+            WORKER_ERRORS.inc()
+            logger.exception("worker error")
         finally:
             await client.disconnect()
+            user_id_var.reset(tok_user)
+            session_id_var.reset(tok_session)
 
 
 async def _fetch_channel_messages(
@@ -92,6 +101,7 @@ async def _fetch_channel_messages(
             session.commit()
             break
         except errors.FloodWaitError as e:
+            FLOOD_WAIT_COUNTER.inc()
             wait_time = e.seconds * (2**attempt)
             logger.warning(
                 "FLOOD_WAIT for %s seconds, retrying in %s", e.seconds, wait_time

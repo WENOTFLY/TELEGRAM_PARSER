@@ -1,0 +1,17 @@
+groups:
+  - name: telegram_parser_alerts
+    rules:
+      - alert: HighErrorRate
+        expr: sum(rate(http_errors_total[5m])) / sum(rate(http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High HTTP 5xx rate on web service
+      - alert: FloodWaitSpike
+        expr: increase(flood_wait_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: FLOOD_WAIT spikes detected in worker
