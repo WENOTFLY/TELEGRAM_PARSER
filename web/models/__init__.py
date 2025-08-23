@@ -17,6 +17,7 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy import JSON
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -132,8 +133,8 @@ class Message(Base):
     comments: Mapped[int | None] = mapped_column(Integer)
     lang: Mapped[str | None] = mapped_column(String(16))
     type: Mapped[str | None] = mapped_column(String(50))
-    hashtags: Mapped[list[str] | None] = mapped_column(ARRAY(String), default=list)
-    links: Mapped[list[str] | None] = mapped_column(ARRAY(String), default=list)
+    hashtags: Mapped[list[str] | None] = mapped_column(JSON, default=list)
+    links: Mapped[list[str] | None] = mapped_column(JSON, default=list)
     media_present: Mapped[bool] = mapped_column(Boolean, default=False)
 
     channel: Mapped["Channel"] = relationship(back_populates="messages")
