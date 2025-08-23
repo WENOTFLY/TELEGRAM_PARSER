@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Packages</title>
+</head>
+<body>
+  <h1>Packages</h1>
+  <div id="packages"></div>
+  <script>
+  fetch('/v1/packages')
+    .then(r => r.json())
+    .then(d => { document.getElementById('packages').textContent = JSON.stringify(d); });
+  </script>
+</body>
+</html>

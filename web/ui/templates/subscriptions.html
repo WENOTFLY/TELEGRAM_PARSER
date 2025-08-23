@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Subscriptions</title>
+</head>
+<body>
+  <h1>Subscriptions</h1>
+  <div id="subs"></div>
+  <script>
+  fetch('/v1/channels/my')
+    .then(r => r.json())
+    .then(d => { document.getElementById('subs').textContent = JSON.stringify(d); });
+  </script>
+</body>
+</html>

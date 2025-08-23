@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Accounts</title>
+</head>
+<body>
+  <h1>Accounts</h1>
+  <div id="accounts"></div>
+  <script>
+  fetch('/v1/accounts')
+    .then(r => r.json())
+    .then(d => { document.getElementById('accounts').textContent = JSON.stringify(d); });
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Feed</title>
+</head>
+<body>
+  <h1>Feed</h1>
+  <div id="feed"></div>
+  <script>
+  fetch('/v1/feed')
+    .then(r => r.json())
+    .then(d => { document.getElementById('feed').textContent = JSON.stringify(d); });
+  </script>
+</body>
+</html>
