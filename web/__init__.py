@@ -1,5 +1,23 @@
 """Web service startup configuration."""
 
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from config import settings
 from migrate import upgrade_db
+from .routes.auth import router as auth_router
+
+app = FastAPI()
+
+origins = [o.strip() for o in settings.frontend_origins.split(",") if o.strip()]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth_router)
 
 upgrade_db()
