@@ -66,6 +66,39 @@ def _encode_jwt(payload: Dict[str, str], *, expires_in: int = 60 * 60 * 24) -> s
     return b".".join((*segments, signature)).decode()
 
 
+def _decode_jwt(token: str) -> Dict[str, str]:
+    """Decode and verify a JWT created by :func:`_encode_jwt`."""
+    try:
+        header_b64, payload_b64, signature_b64 = token.split(".")
+        signing_input = f"{header_b64}.{payload_b64}".encode()
+        signature = base64.urlsafe_b64decode(signature_b64 + "==")
+        expected = hmac.new(
+            settings.secret_key.encode(), signing_input, hashlib.sha256
+        ).digest()
+        if not hmac.compare_digest(signature, expected):
+            raise ValueError("bad signature")
+        payload = json.loads(base64.urlsafe_b64decode(payload_b64 + "=="))
+    except Exception as exc:  # noqa: BLE001 - broad for auth failure
+        raise HTTPException(status_code=401, detail="invalid token") from exc
+    if payload.get("exp", 0) < int(time.time()):
+        raise HTTPException(status_code=401, detail="token expired")
+    return payload
+
+
+async def get_current_user(
+    request: Request, db: Session = Depends(get_db)
+) -> User:
+    """Retrieve the currently authenticated user from the JWT cookie."""
+    token = request.cookies.get("jwt")
+    if token is None:
+        raise HTTPException(status_code=401, detail="unauthenticated")
+    payload = _decode_jwt(token)
+    user = db.get(User, int(payload.get("sub", 0)))
+    if user is None:
+        raise HTTPException(status_code=401, detail="unauthenticated")
+    return user
+
+
 @router.get("/telegram/callback")
 async def telegram_callback(
     request: Request, response: Response, db: Session = Depends(get_db)
