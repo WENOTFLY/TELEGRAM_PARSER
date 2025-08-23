@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Top & Topics</title>
+</head>
+<body>
+  <h1>Top</h1>
+  <div id="top"></div>
+  <h2>Topics</h2>
+  <div id="topics"></div>
+  <script>
+  fetch('/v1/top?window=24h&by=message')
+    .then(r => r.json())
+    .then(d => { document.getElementById('top').textContent = JSON.stringify(d); });
+  fetch('/v1/top?window=24h&by=topic')
+    .then(r => r.json())
+    .then(d => { document.getElementById('topics').textContent = JSON.stringify(d); });
+  </script>
+</body>
+</html>
