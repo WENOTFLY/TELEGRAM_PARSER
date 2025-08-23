@@ -45,6 +45,7 @@ def client():
         MediaAsset,
         ContentPackage,
         ContentPackageItem,
+        AIUsage,
     )
 
     Base.metadata.create_all(
@@ -56,6 +57,7 @@ def client():
             MediaAsset.__table__,
             ContentPackage.__table__,
             ContentPackageItem.__table__,
+            AIUsage.__table__,
         ],
     )
 
@@ -67,6 +69,7 @@ def client():
     client.MediaAsset = MediaAsset
     client.ContentPackage = ContentPackage
     client.ContentPackageItem = ContentPackageItem
+    client.AIUsage = AIUsage
     client._encode_jwt = auth._encode_jwt
 
     with client.db() as db:
@@ -126,6 +129,13 @@ def test_pipeline_flow(client: TestClient, monkeypatch):
     with client.db() as db:
         count = db.query(client.MediaAsset).count()
         assert count == 1
+        # moderation + image generation entries
+        assert db.query(client.AIUsage).count() == 2
+
+    usage_resp = client.get("/v1/usage")
+    assert usage_resp.status_code == 200
+    usage_data = usage_resp.json()
+    assert usage_data["total_cost_usd"] >= 0.04
 
     # 3. package
     pkg_payload = {

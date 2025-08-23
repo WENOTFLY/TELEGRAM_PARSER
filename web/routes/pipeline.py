@@ -11,6 +11,8 @@ from sqlalchemy.orm import Session
 
 from openai import OpenAI
 
+from ..usage import check_plan_limit, log_ai_usage
+
 from ..models import (
     ContentPackage,
     ContentPackageItem,
@@ -155,6 +157,8 @@ async def generate_images(
     brief = db.get(ImageBrief, payload.image_brief_id)
     if brief is None or brief.editor_result.user_id != user.id:
         raise HTTPException(status_code=404, detail="image brief not found")
+    n = brief.variants or 1
+    size = brief.size or "1024x1024"
 
     client = OpenAI()
     # Simple moderation step; in case of flagged content, raise error
@@ -163,9 +167,22 @@ async def generate_images(
     )
     if getattr(mod.results[0], "flagged", False):
         raise HTTPException(status_code=400, detail="prompt flagged")
+    # record moderation usage (tokens and cost not provided)
+    log_ai_usage(
+        db,
+        user.id,
+        model="omni-moderation-latest",
+        input_tokens=0,
+        output_tokens=0,
+        cost_usd=0.0,
+        purpose="moderation",
+    )
 
-    n = brief.variants or 1
-    size = brief.size or "1024x1024"
+    # estimate cost for images and ensure plan limits
+    cost_map = {"256x256": 0.016, "512x512": 0.018, "1024x1024": 0.04}
+    cost = cost_map.get(size, 0.04) * n
+    check_plan_limit(db, user, additional_cost=cost)
+
     resp = client.images.generate(
         model="gpt-image-1", prompt=brief.prompt or "", size=size, n=n
     )
@@ -179,6 +196,16 @@ async def generate_images(
         )
         db.add(asset)
     db.commit()
+
+    log_ai_usage(
+        db,
+        user.id,
+        model="gpt-image-1",
+        input_tokens=0,
+        output_tokens=0,
+        cost_usd=cost,
+        purpose="images",
+    )
 
     return ImagesResponse(urls=urls)
 
