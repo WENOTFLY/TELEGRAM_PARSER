@@ -16,7 +16,6 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy import JSON
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -146,8 +145,11 @@ class MediaAsset(Base):
     __tablename__ = "media_assets"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    message_id: Mapped[int] = mapped_column(
-        ForeignKey("messages.id", ondelete="CASCADE"), nullable=False
+    message_id: Mapped[int | None] = mapped_column(
+        ForeignKey("messages.id", ondelete="CASCADE"), nullable=True
+    )
+    image_brief_id: Mapped[int | None] = mapped_column(
+        ForeignKey("image_briefs.id", ondelete="CASCADE"), nullable=True
     )
     kind: Mapped[str] = mapped_column(String(50))
     url: Mapped[str] = mapped_column(String)
@@ -156,6 +158,7 @@ class MediaAsset(Base):
     hash: Mapped[str | None] = mapped_column(String(128))
 
     message: Mapped["Message"] = relationship(back_populates="media_assets")
+    image_brief: Mapped["ImageBrief"] = relationship(back_populates="media_assets")
 
 
 class Topic(Base):
@@ -202,13 +205,13 @@ class EditorResult(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     topic_id: Mapped[int | None] = mapped_column(ForeignKey("topics.id"))
-    message_ids: Mapped[list[int] | None] = mapped_column(ARRAY(Integer))
+    message_ids: Mapped[list[int] | None] = mapped_column(JSON)
     language: Mapped[str | None] = mapped_column(String(16))
     headline: Mapped[str | None] = mapped_column(Text)
     dek: Mapped[str | None] = mapped_column(Text)
-    body_variants: Mapped[dict | None] = mapped_column(JSONB)
-    key_points: Mapped[dict | None] = mapped_column(JSONB)
-    source_links: Mapped[dict | None] = mapped_column(JSONB)
+    body_variants: Mapped[dict | None] = mapped_column(JSON)
+    key_points: Mapped[dict | None] = mapped_column(JSON)
+    source_links: Mapped[dict | None] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     user: Mapped["User"] = relationship(back_populates="editor_results")
@@ -230,9 +233,10 @@ class ImageBrief(Base):
     size: Mapped[str | None] = mapped_column(String(50))
     variants: Mapped[int | None] = mapped_column(Integer)
     caption: Mapped[str | None] = mapped_column(Text)
-    style_tags: Mapped[list[str] | None] = mapped_column(ARRAY(String))
+    style_tags: Mapped[list[str] | None] = mapped_column(JSON)
 
     editor_result: Mapped["EditorResult"] = relationship(back_populates="image_briefs")
+    media_assets: Mapped[list["MediaAsset"]] = relationship(back_populates="image_brief")
 
 
 class ContentPackage(Base):
@@ -259,8 +263,8 @@ class ContentPackageItem(Base):
     )
     platform: Mapped[str | None] = mapped_column(String(50))
     post_time: Mapped[datetime | None] = mapped_column(DateTime)
-    post_text: Mapped[dict | None] = mapped_column(JSONB)
-    hashtags: Mapped[list[str] | None] = mapped_column(ARRAY(String))
+    post_text: Mapped[dict | None] = mapped_column(JSON)
+    hashtags: Mapped[list[str] | None] = mapped_column(JSON)
     cta: Mapped[str | None] = mapped_column(String(255))
     image_url: Mapped[str | None] = mapped_column(String)
 
