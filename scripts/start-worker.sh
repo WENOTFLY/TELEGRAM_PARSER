@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+cd "$(dirname "$0")/.."
+export PYTHONPATH="$(pwd):${PYTHONPATH}"
+
 # Run migrations with retry until database is ready
 until alembic upgrade head; do
   echo "Database not ready, retrying in 1s..."
